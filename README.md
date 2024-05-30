@@ -44,9 +44,3 @@ Example Playbook
         redis_extra_config: |
           protected-mode no
 ```
-
-License
--------
-
-BSD
-
