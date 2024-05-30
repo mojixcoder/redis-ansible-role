@@ -1,5 +1,5 @@
 galaxy_info:
-  author: mojixcoder
+  author: mojtaba.arezoomand
   description: An Ansible role to install Redis
   company: Snapp!
   role_name: redis
