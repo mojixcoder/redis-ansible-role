@@ -1,0 +1,15 @@
+- name: Install Redis
+  hosts: redis10
+  become: yes
+  tasks:
+    - name: Run install Redis role
+      import_role:
+        name: redis
+      vars:
+        redis_cluster_enabled: yes
+        redis_bind_interface: 0.0.0.0
+        redis_extra_config: |
+          protected-mode no
+          maxmemory 200mb
+          supervised systemd
+          databases 16

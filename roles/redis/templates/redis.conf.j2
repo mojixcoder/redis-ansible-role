@@ -1,0 +1,22 @@
+# {{ ansible_managed }}
+
+dir /var/lib/redis
+
+daemonize no
+
+port {{ redis_port }}
+bind {{ redis_bind_interface }}
+
+{% if redis_cluster_enabled == "yes" %}
+cluster-enabled yes
+cluster-config-file nodes.conf
+cluster-port {{ redis_cluster_port }}
+{% endif %}
+
+loglevel {{ redis_log_level }}
+logfile /var/log/redis/redis-server.log
+
+slowlog-log-slower-than 1000
+slowlog-max-len 128
+
+{{ redis_extra_config }}
