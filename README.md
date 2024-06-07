@@ -41,6 +41,7 @@ Example Playbook
         name: redis
       vars:
         redis_cluster_enabled: yes
+        install_redis_exporter: true
         redis_extra_config: |
           protected-mode no
 ```
