@@ -1,4 +1,15 @@
 ---
+- name: Ensure necessary packages exist
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+    state: present
+  loop:
+    - curl
+    - gpg
+    - lsb-release
+    - logrotate
+
 - name: Turn on overcommit memory
   sysctl:
     name: vm.overcommit_memory
@@ -72,6 +83,11 @@
     group: root
   notify: Restart Redis
 
+- name: Enable log rotation for Redis logs
+  copy:
+    src: redis-server
+    dest: /etc/logrotate.d/redis-server
+
 - name: Remove existing Redis keyring file
   file:
     path: /usr/share/keyrings/redis-archive-keyring.gpg
@@ -96,3 +112,27 @@
     name: redis-server
     enabled: yes
     state: started
+
+- name: Install Redis exporter
+  copy: 
+    src: redis_exporter.bin
+    dest: /usr/bin/redis_exporter
+    mode: a+x
+  when: install_redis_exporter
+
+- name: Create Redis exporter systemd service unit
+  template:
+    src: redis-exporter.service.j2
+    dest: /lib/systemd/system/redis-exporter.service
+    mode: "0644"
+    owner: root
+    group: root
+  when: install_redis_exporter
+
+- name: Start and enable Redis exporter
+  service:
+    name: redis-exporter
+    enabled: yes
+    state: started
+  when: install_redis_exporter
+  

@@ -8,3 +8,5 @@ redis_cluster_port: 16379
 redis_log_level: notice
 
 redis_extra_config: ""
+
+install_redis_exporter: true
