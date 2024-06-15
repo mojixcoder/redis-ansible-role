@@ -1,0 +1,41 @@
+---
+- name: Get current host's IPs
+  command: hostname -I
+  register: ips
+
+- name: Set assigned IPs to each host
+  set_fact:
+    host_ips: "{{ ips.stdout.split() }}"
+
+- name: Update Redis config
+  lineinfile:
+    dest: /etc/redis/redis.conf
+    line: "replicaof {{ sentinel_master_ip }} {{ redis_port }}"
+    regexp: "^replicaof"
+    state: present
+  when: not sentinel_master_ip in host_ips
+  notify: Restart Redis
+
+- name: Create Redis sentinel systemd service unit
+  copy:
+    src: redis-sentinel.service
+    dest: /lib/systemd/system/redis-sentinel.service
+    mode: "0644"
+    owner: root
+    group: root
+  notify: Restart Redis sentinel
+
+- name: Create Redis sentinel config file
+  template:
+    src: sentinel.conf.j2
+    dest: /etc/redis/sentinel.conf
+    owner: redis
+    group: redis
+    mode: "0755"
+  notify: Restart Redis sentinel
+
+- name: Start and enable Redis sentinel
+  service:
+    name: redis-sentinel
+    enabled: yes
+    state: started

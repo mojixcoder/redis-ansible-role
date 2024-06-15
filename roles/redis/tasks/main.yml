@@ -1,138 +1,23 @@
 ---
-- name: Ensure necessary packages exist
-  apt:
-    update_cache: yes
-    cache_valid_time: 3600
-    state: present
-  loop:
-    - curl
-    - gpg
-    - lsb-release
-    - logrotate
+- name: Validate variables
+  fail:
+    msg: cluster_enabled and sentinel_enabled can't be enabled at the same time
+  when: sentinel_enabled and cluster_enabled
 
-- name: Turn on overcommit memory
-  sysctl:
-    name: vm.overcommit_memory
-    value: "1"
-  
-- name: Set IPv4 tcp_max_syn_backlog
-  sysctl:
-    name: net.ipv4.tcp_max_syn_backlog
-    value: "4096"
-
-- name: Setting somaxconn
-  sysctl:
-    name: net.core.somaxconn
-    value: "4096"
-
-- name: Disabling transparent huge pages
-  lineinfile:
-    dest: /etc/default/grub
-    state: present
-    line: 'GRUB_CMDLINE_LINUX="transparent_hugepage=never $GRUB_CMDLINE_LINUX"'
-  register: grub
-
-- name: Rebuilding grub config file
-  command: grub-mkconfig -o /boot/grub/grub.cfg
-  when: grub.changed
-
-- name: Reboot server 
-  reboot:
-    reboot_timeout: 1200
-  when: grub.changed
-
-- name: Ensure Redis group exists
-  group:
-    name: redis
-    state: present
-
-- name: Ensure Redis user exists
-  user:
-    create_home: false
-    group: redis
-    name: redis
-    state: present
-
-- name: Ensure necessary directories exist
-  file: 
-    path: "{{ item }}"
-    group: redis
-    owner: redis
-    state: directory
-    mode: "0755"
-  loop:
-    - /etc/redis
-    - /var/log/redis
-    - /var/lib/redis
-
-- name: Create Redis config file
-  template:
-    src: redis.conf.j2
-    dest: /etc/redis/redis.conf
-    owner: redis
-    group: redis
-    mode: "0755"
-  notify: Restart Redis
-
-- name: Create Redis systemd service unit
-  template:
-    src: redis-server.service.j2
-    dest: /lib/systemd/system/redis-server.service
-    mode: "0644"
-    owner: root
-    group: root
-  notify: Restart Redis
-
-- name: Enable log rotation for Redis logs
-  copy:
-    src: redis-server
-    dest: /etc/logrotate.d/redis-server
-
-- name: Remove existing Redis keyring file
-  file:
-    path: /usr/share/keyrings/redis-archive-keyring.gpg
-    state: absent
-
-- name: Add Redis GPG Key
-  shell: curl -fsSL https://packages.redis.io/gpg | sudo gpg --batch --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
-
-- name: Add Redis apt repository
-  shell: echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
+- name: Shared tasks
+  import_tasks:
+    file: shared.yaml
 
 - name: Install Redis
-  apt: 
-    name: redis
-    update_cache: yes
-    cache_valid_time: 3600
-    install_recommends: true
-    state: present
+  import_tasks:
+    file: redis.yaml
 
-- name: Start and enable Redis
-  service:
-    name: redis-server
-    enabled: yes
-    state: started
+- name: Install Redis sentinel
+  import_tasks:
+    file: sentinel.yaml
+  when: sentinel_enabled
 
 - name: Install Redis exporter
-  copy: 
-    src: redis_exporter.bin
-    dest: /usr/bin/redis_exporter
-    mode: a+x
+  import_tasks:
+    file: sentinel.yaml
   when: install_redis_exporter
-
-- name: Create Redis exporter systemd service unit
-  template:
-    src: redis-exporter.service.j2
-    dest: /lib/systemd/system/redis-exporter.service
-    mode: "0644"
-    owner: root
-    group: root
-  when: install_redis_exporter
-
-- name: Start and enable Redis exporter
-  service:
-    name: redis-exporter
-    enabled: yes
-    state: started
-  when: install_redis_exporter
-  

@@ -7,10 +7,10 @@ daemonize no
 port {{ redis_port }}
 bind {{ redis_bind_interface }}
 
-{% if redis_cluster_enabled == "yes" %}
+{% if cluster_enabled %}
 cluster-enabled yes
 cluster-config-file nodes.conf
-cluster-port {{ redis_cluster_port }}
+cluster-port {{ cluster_port }}
 {% endif %}
 
 loglevel {{ redis_log_level }}

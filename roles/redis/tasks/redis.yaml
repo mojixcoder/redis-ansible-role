@@ -1,0 +1,71 @@
+---
+- name: Ensure Redis group exists
+  group:
+    name: redis
+    state: present
+
+- name: Ensure Redis user exists
+  user:
+    create_home: false
+    group: redis
+    name: redis
+    state: present
+
+- name: Ensure necessary directories exist
+  file: 
+    path: "{{ item }}"
+    group: redis
+    owner: redis
+    state: directory
+    mode: "0755"
+  loop:
+    - /etc/redis
+    - /var/log/redis
+    - /var/lib/redis
+
+- name: Create Redis config file
+  template:
+    src: redis.conf.j2
+    dest: /etc/redis/redis.conf
+    owner: redis
+    group: redis
+    mode: "0755"
+  notify: Restart Redis
+
+- name: Create Redis systemd service unit
+  copy:
+    src: redis-server.service
+    dest: /lib/systemd/system/redis-server.service
+    mode: "0644"
+    owner: root
+    group: root
+  notify: Restart Redis
+
+- name: Enable log rotation for Redis logs
+  copy:
+    src: redis-server
+    dest: /etc/logrotate.d/redis-server
+
+- name: Remove existing Redis keyring file
+  file:
+    path: /usr/share/keyrings/redis-archive-keyring.gpg
+    state: absent
+
+- name: Add Redis GPG Key
+  shell: curl -fsSL https://packages.redis.io/gpg | sudo gpg --batch --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
+
+- name: Add Redis apt repository
+  shell: echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
+
+- name: Install Redis
+  apt: 
+    name: redis
+    update_cache: yes
+    install_recommends: true
+    state: present
+
+- name: Start and enable Redis
+  service:
+    name: redis-server
+    enabled: yes
+    state: started

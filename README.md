@@ -1,7 +1,7 @@
 Redis
 =========
 
-An Ansible role to install Redis
+An Ansible role to install Redis in standalone, cluster or sentinel mode.
 
 Role Variables
 --------------
@@ -19,8 +19,22 @@ redis_log_level: notice
 
 Redis Cluster configs.
 ```yaml
-redis_cluster_enabled: "no"
-redis_cluster_port: 16379
+cluster_enabled: false
+cluster_port: 16379
+```
+
+Redis Sentinel configs.
+```yaml
+sentinel_enabled: false
+sentinel_port: 26379
+sentinel_quorum: 2
+sentinel_down_after_ms: 5000
+sentinel_failover_timeout_ms: 60000
+sentinel_parallel_syncs: 1
+```
+If redis sentinel is enabled, you have to provide an additional config which doesn't have any default values:
+```yaml
+sentinel_master_ip: <ip_of_master_node>
 ```
 
 Any additional config can go here.
@@ -40,7 +54,7 @@ Example Playbook
       import_role:
         name: redis
       vars:
-        redis_cluster_enabled: yes
+        cluster_enabled: true
         install_redis_exporter: true
         redis_extra_config: |
           protected-mode no

@@ -1,0 +1,20 @@
+---
+- name: Install Redis exporter
+  copy: 
+    src: redis_exporter.bin
+    dest: /usr/bin/redis_exporter
+    mode: a+x
+
+- name: Create Redis exporter systemd service unit
+  template:
+    src: redis-exporter.service.j2
+    dest: /lib/systemd/system/redis-exporter.service
+    mode: "0644"
+    owner: root
+    group: root
+
+- name: Start and enable Redis exporter
+  service:
+    name: redis-exporter
+    enabled: yes
+    state: started

@@ -1,0 +1,13 @@
+# {{ ansible_managed }}
+
+port {{ sentinel_port }}
+bind {{ redis_bind_interface }}
+
+sentinel monitor myprimary {{ sentinel_master_ip }} {{ redis_port }} {{ sentinel_quorum }}
+sentinel down-after-milliseconds myprimary {{ sentinel_down_after_ms }}
+sentinel failover-timeout myprimary {{ sentinel_failover_timeout_ms }}
+sentinel parallel-syncs myprimary {{ sentinel_parallel_syncs }}
+
+logfile /var/log/redis/redis-sentinel.log
+
+{{ sentinel_extra_config }}
