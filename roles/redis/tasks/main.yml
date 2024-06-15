@@ -1,8 +1,7 @@
 ---
-- name: Validate variables
-  fail:
-    msg: cluster_enabled and sentinel_enabled can't be enabled at the same time
-  when: sentinel_enabled and cluster_enabled
+- name: Validation
+  import_tasks:
+    file: validation.yaml
 
 - name: Shared tasks
   import_tasks:
@@ -19,5 +18,5 @@
 
 - name: Install Redis exporter
   import_tasks:
-    file: sentinel.yaml
+    file: redis-exporter.yaml
   when: install_redis_exporter

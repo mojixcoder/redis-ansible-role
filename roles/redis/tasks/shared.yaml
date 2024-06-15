@@ -20,9 +20,9 @@
     - name: vm.overcommit_memory
       value: "1"
     - name: net.ipv4.tcp_max_syn_backlog
-      value: "4096"
+      value: "16384"
     - name: net.core.somaxconn
-      value: "4096"
+      value: "16384"
     - name: vm.swappiness
       value: "0"
     - name: net.ipv4.tcp_window_scaling

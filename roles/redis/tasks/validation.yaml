@@ -1,0 +1,10 @@
+---
+- name: Validate Redis setup mode
+  fail:
+    msg: cluster and sentinel modes cannot be enabled at the same time.
+  when: sentinel_enabled and cluster_enabled
+
+- name: Validate sentinel mode
+  fail: 
+    msg: sentinel_master_ip must be provided when sentinel is enabled.
+  when: sentinel_enabled and sentinel_master_ip is undefined

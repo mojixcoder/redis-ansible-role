@@ -34,7 +34,7 @@ sentinel_parallel_syncs: 1
 ```
 If redis sentinel is enabled, you have to provide an additional config which doesn't have any default values:
 ```yaml
-sentinel_master_ip: <ip_of_master_node>
+sentinel_master_ip: "<ip_of_master_node>"
 ```
 
 Any additional config can go here.
