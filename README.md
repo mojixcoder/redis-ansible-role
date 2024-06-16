@@ -1,10 +1,9 @@
 Redis
-=========
+========
 
 An Ansible role to install Redis in standalone, cluster or sentinel mode.
 
-Role Variables
---------------
+## Role Variables
 
 Port and interface on which Redis will listen.
 ```yaml
@@ -46,6 +45,9 @@ Any additional Redis sentinel config can go here.
 ```yaml
 sentinel_extra_config: ""
 ```
+
+## Usage
+Clone repo and put your playbook file adjacent to `roles/redis` directory. Import the role in one of your tasks and start using it.
 
 Cluster installation
 ----------------
