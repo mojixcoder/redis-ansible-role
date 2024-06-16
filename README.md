@@ -48,6 +48,7 @@ sentinel_extra_config: ""
 
 ## Usage
 Clone repo and put your playbook file adjacent to `roles/redis` directory. Import the role in one of your tasks and start using it.
+To run playbook: `ansible-playbook -i /path/to/inventory.txt /path/to/playbook.yaml`
 
 Cluster installation
 ----------------
