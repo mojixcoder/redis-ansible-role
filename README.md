@@ -9,7 +9,7 @@ Role Variables
 Port and interface on which Redis will listen.
 ```yaml
 redis_port: 6379
-redis_bind_interface: 127.0.0.1
+redis_bind_interface: 0.0.0.0
 ```
 
 Redis log level. Can be debug, verbose, notice and warning.
@@ -37,12 +37,17 @@ If redis sentinel is enabled, you have to provide an additional config which doe
 sentinel_master_ip: "<ip_of_master_node>"
 ```
 
-Any additional config can go here.
+Any additional Redis config can go here.
 ```yaml
 redis_extra_config: ""
 ```
 
-Example Playbook
+Any additional Redis sentinel config can go here.
+```yaml
+sentinel_extra_config: ""
+```
+
+Cluster installation
 ----------------
 
 ```yaml
@@ -55,6 +60,45 @@ Example Playbook
         name: redis
       vars:
         cluster_enabled: true
+        install_redis_exporter: true
+        redis_extra_config: |
+          protected-mode no
+```
+
+Sentinel installation
+----------------
+
+```yaml
+- name: Install Redis
+  hosts: redis1
+  become: yes
+  tasks:
+    - name: Run install Redis role
+      import_role:
+        name: redis
+      vars:
+        cluster_enabled: false
+        sentinel_enabled: true
+        sentinel_master_ip: "127.0.0.1"
+        install_redis_exporter: true
+        redis_extra_config: |
+          protected-mode no
+```
+
+Standalone installation
+----------------
+
+```yaml
+- name: Install Redis
+  hosts: redis1
+  become: yes
+  tasks:
+    - name: Run install Redis role
+      import_role:
+        name: redis
+      vars:
+        cluster_enabled: false
+        sentinel_enabled: false
         install_redis_exporter: true
         redis_extra_config: |
           protected-mode no
